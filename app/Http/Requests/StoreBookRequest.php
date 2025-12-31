@@ -25,8 +25,9 @@ class StoreBookRequest extends FormRequest
             'category_id' => 'required|exists:categories,id',
             'title'       => 'required|string|max:255',
             'author'      => 'required|string',
-            'price'       => 'required|numeric|min:0',
-            'stock'       => 'required|integer|min:0',
+            'price'       => 'required|numeric',
+            'stock'       => 'required|integer',
+            'images'      => 'nullable|array'
         ];
     }
 }
