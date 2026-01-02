@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreBookRequest;
-use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\BookImage;
-use App\Http\Resources\BookResource;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\BookResource;
+use App\Http\Requests\StoreBookRequest;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\UpdateBookRequest;
+use Illuminate\Support\Facades\Validator;
 
 class BookController extends Controller
 {
-    public function store(StoreBookRequest $request)
+    public function index(StoreBookRequest $request)
     {
         $book = Book::create($request->validated());
 
@@ -24,15 +25,15 @@ class BookController extends Controller
                     ['image' => $image],
                     ['image' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048']
                 );
-                
+
                 if ($validator->fails()) {
                     Log::error('Validation failed:', $validator->errors()->toArray());
                     continue;
                 }
-                
+
                 $path = $image->store('books', 'public');
                 Log::info('Saved image:', ['path' => $path]);
-                
+
                 BookImage::create([
                     'book_id' => $book->id,
                     'image_path' => $path,
@@ -48,7 +49,7 @@ class BookController extends Controller
         ], 201);
     }
 
-    public function index(Request $request)
+    public function store(Request $request)
     {
         $query = Book::with(['category', 'images']);
 
@@ -59,7 +60,7 @@ class BookController extends Controller
         $query->when($request->search, function ($q, $search) {
             return $q->where(function ($subQuery) use ($search) {
                 $subQuery->where('title', 'like', "%{$search}%")
-                        ->orWhere('author', 'like', "%{$search}%");
+                    ->orWhere('author', 'like', "%{$search}%");
             });
         });
 
@@ -76,5 +77,70 @@ class BookController extends Controller
 
         $books = $query->paginate(10);
         return BookResource::collection($books);
+    }
+
+    public function show($id)
+    {
+        $book = Book::with(['category', 'images'])->find($id);
+
+        if (!$book) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy sản phẩm!'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => new BookResource($book)
+        ]);
+    }
+
+    public function update(UpdateBookRequest $request, $id)
+    {
+        $book = Book::find($id);
+
+        if (!$book) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy sản phẩm!'], 404);
+        }
+
+        $book->update($request->validated());
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('books', 'public');
+
+                $book->images()->create([
+                    'image_path' => $path,
+                    'is_main' => false,
+                ]);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật thành công!',
+            'data' => new BookResource($book->load('images'))
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $book = Book::find($id);
+
+        if (!$book) {
+            return response()->json(['success' => false, 'message' => 'Không tìm thấy sản phẩm!'], 404);
+        }
+
+        foreach ($book->images as $image) {
+            Storage::disk('public')->delete($image->image_path);
+        }
+
+        $book->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Xóa sản phẩm thành công!'
+        ]);
     }
 }
