@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Books;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateCategoryRequest extends FormRequest
+class StoreBookRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -22,8 +22,12 @@ class UpdateCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|unique:categories,name|max:255',
-            'slug' => 'nullable|string|unique:categories,slug'
+            'category_id' => 'required|exists:categories,id',
+            'title'       => 'required|string|max:255',
+            'author'      => 'required|string',
+            'price'       => 'required|numeric',
+            'stock'       => 'required|integer',
+            'images'      => 'nullable|array'
         ];
     }
 }

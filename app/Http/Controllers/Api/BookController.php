@@ -8,14 +8,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BookResource;
-use App\Http\Requests\StoreBookRequest;
+use App\Http\Requests\Books\StoreBookRequest;
 use Illuminate\Support\Facades\Storage;
-use App\Http\Requests\UpdateBookRequest;
+use App\Http\Requests\Books\UpdateBookRequest;
 use Illuminate\Support\Facades\Validator;
 
 class BookController extends Controller
 {
-    public function index(StoreBookRequest $request)
+    public function store(StoreBookRequest $request)
     {
         $book = Book::create($request->validated());
 
@@ -49,7 +49,7 @@ class BookController extends Controller
         ], 201);
     }
 
-    public function store(Request $request)
+    public function index(Request $request)
     {
         $query = Book::with(['category', 'images']);
 
