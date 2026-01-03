@@ -1,10 +1,10 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\BookController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CartController;
 
 Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
@@ -18,12 +18,18 @@ Route::get('categories', [CategoryController::class, 'index']);
 Route::get('categories/{id}', [CategoryController::class, 'show']);
 
 Route::middleware('auth.jwt')->group(function () {
-
+    // auth
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::get('me', [AuthController::class, 'me']);
     Route::put('update-profile', [AuthController::class, 'updateProfile']);
     Route::post('change-password', [AuthController::class, 'changePassword']);
+
+    // cart 
+    Route::get('cart', [CartController::class, 'index']);
+    Route::post('cart/sync', [CartController::class, 'sync']);
+    Route::post('cart/add', [CartController::class, 'store']);
+    Route::delete('cart/{id}', [CartController::class, 'destroy']);
 
     Route::middleware('admin')->group(function () {
         // books
