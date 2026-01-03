@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\BookController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\OrderController;
 
 Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
@@ -31,6 +32,12 @@ Route::middleware('auth.jwt')->group(function () {
     Route::post('cart/add', [CartController::class, 'store']);
     Route::delete('cart/{id}', [CartController::class, 'destroy']);
 
+    // orders
+    Route::post('checkout', [OrderController::class, 'checkout']);
+    Route::get('my-orders', [OrderController::class, 'index']);
+    Route::get('orders/{id}', [OrderController::class, 'show']);
+    Route::post('orders/{id}/cancel', [OrderController::class, 'cancel']);
+
     Route::middleware('admin')->group(function () {
         // books
         Route::post('books', [BookController::class, 'store']);
@@ -43,5 +50,9 @@ Route::middleware('auth.jwt')->group(function () {
         Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
 
         Route::get('admin/users', [AuthController::class, 'users']);
+
+        // orders
+        Route::get('admin/orders', [OrderController::class, 'adminIndex']);
+        Route::put('admin/orders/{id}/status', [OrderController::class, 'updateStatus']);
     });
 });
