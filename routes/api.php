@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\ReviewController;
+
 
 Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
@@ -17,6 +19,9 @@ Route::get('books/{id}', [BookController::class, 'show']);
 // categories
 Route::get('categories', [CategoryController::class, 'index']);
 Route::get('categories/{id}', [CategoryController::class, 'show']);
+
+// reviews
+Route::get('books/{id}/reviews', [ReviewController::class, 'getByBook']);
 
 Route::middleware('auth.jwt')->group(function () {
     // auth
@@ -37,6 +42,9 @@ Route::middleware('auth.jwt')->group(function () {
     Route::get('my-orders', [OrderController::class, 'index']);
     Route::get('orders/{id}', [OrderController::class, 'show']);
     Route::post('orders/{id}/cancel', [OrderController::class, 'cancel']);
+
+    // reviews
+    Route::post('reviews', [ReviewController::class, 'store']);
 
     Route::middleware('admin')->group(function () {
         // books

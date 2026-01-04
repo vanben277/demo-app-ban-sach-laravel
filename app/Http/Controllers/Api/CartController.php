@@ -51,11 +51,22 @@ class CartController extends Controller
     public function store(Request $request)
     {
         $userId = auth('api')->id();
+        $bookId = $request->book_id;
+        $quantityToAdd = $request->quantity ?? 1;
 
-        $cartItem = Cart::updateOrCreate(
-            ['user_id' => $userId, 'book_id' => $request->book_id],
-            ['quantity' => DB::raw("quantity + " . ($request->quantity ?? 1))]
-        );
+        $cartItem = Cart::where('user_id', $userId)
+            ->where('book_id', $bookId)
+            ->first();
+
+        if ($cartItem) {
+            $cartItem->increment('quantity', $quantityToAdd);
+        } else {
+            Cart::create([
+                'user_id' => $userId,
+                'book_id' => $bookId,
+                'quantity' => $quantityToAdd,
+            ]);
+        }
 
         return response()->json(['success' => true, 'message' => 'Đã cập nhật giỏ hàng']);
     }

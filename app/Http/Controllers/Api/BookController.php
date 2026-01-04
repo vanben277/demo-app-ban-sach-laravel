@@ -53,6 +53,12 @@ class BookController extends Controller
     {
         $query = Book::with(['category', 'images']);
 
+        $query->where('is_active', true);
+
+        if ($request->has('in_stock')) {
+            $query->where('stock', '>', 0);
+        }
+
         $query->when($request->category_id, function ($q, $categoryId) {
             return $q->where('category_id', $categoryId);
         });
@@ -132,15 +138,11 @@ class BookController extends Controller
             return response()->json(['success' => false, 'message' => 'Không tìm thấy sản phẩm!'], 404);
         }
 
-        foreach ($book->images as $image) {
-            Storage::disk('public')->delete($image->image_path);
-        }
-
         $book->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Xóa sản phẩm thành công!'
+            'message' => 'Sản phẩm đã được đưa vào danh sách tạm xóa (Soft Delete)!'
         ]);
     }
 }

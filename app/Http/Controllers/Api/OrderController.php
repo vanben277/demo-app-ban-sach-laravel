@@ -13,10 +13,10 @@ class OrderController extends Controller
     public function checkout(Request $request)
     {
         $request->validate([
-            'phone' => 'required|string',
-            'address' => 'required|string',
+            'phone' => 'required',
+            'address' => 'required',
+            'payment_method' => 'required|in:cod,bank_transfer',
         ]);
-
         $user = auth('api')->user();
 
         $cartItems = Cart::where('user_id', $user->id)->with('book')->get();
@@ -41,7 +41,7 @@ class OrderController extends Controller
                 'total_amount' => $totalAmount,
                 'phone' => $request->phone,
                 'address' => $request->address,
-                'note' => $request->note,
+                'payment_method' => $request->payment_method,
                 'status' => 'pending'
             ]);
 
@@ -58,10 +58,24 @@ class OrderController extends Controller
 
             Cart::where('user_id', $user->id)->delete();
 
+            $qrUrl = null;
+            if ($request->payment_method === 'bank_transfer') {
+                $bankId    = config('services.vietqr.bank_id');
+                $accountNo = config('services.vietqr.account_no');
+                $template  = config('services.vietqr.template');
+
+                $amount      = $totalAmount;
+                $description = "DH" . $order->id . " " . $request->phone;
+
+                $qrUrl = "https://img.vietqr.io/image/{$bankId}-{$accountNo}-{$template}.png?amount={$amount}&addInfo={$description}";
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'Thanh toán thành công!',
-                'order_id' => $order->id
+                'message' => 'Đặt hàng thành công!',
+                'order_id' => $order->id,
+                'payment_method' => $order->payment_method,
+                'qr_url' => $qrUrl
             ], 201);
         });
     }

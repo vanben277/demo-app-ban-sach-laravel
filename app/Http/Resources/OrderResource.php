@@ -18,6 +18,7 @@ class OrderResource extends JsonResource
             'id' => $this->id,
             'total_amount' => $this->total_amount,
             'status' => $this->status,
+            'payment_method' => $this->payment_method,
             'shipping_info' => [
                 'phone' => $this->phone,
                 'address' => $this->address,

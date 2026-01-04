@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'vietqr' => [
+        'bank_id' => env('VIETQR_BANK_ID', 'TCB'),
+        'account_no' => env('VIETQR_ACCOUNT_NO'),
+        'template' => env('VIETQR_TEMPLATE', 'compact2'),
+    ],
+
 ];
